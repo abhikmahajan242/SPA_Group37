@@ -1,0 +1,6 @@
+route_id,route_name,terminal,scheduled_arrival_time
+R-101,Cyber Hub Express,Terminal A,10:30:00
+R-102,Golf Course Loop,Terminal B,10:45:00
+R-103,Sector 48 Shuttle,Terminal C,11:00:00
+R-104,Sector 65 Direct,Terminal A,11:15:00
+R-105,South City Transit,Terminal D,11:30:00
