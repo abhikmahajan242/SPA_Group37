@@ -1,36 +1,54 @@
 ```mermaid
 graph TD
-    %% Data Sources
-    subgraph Sources [Data Sources Layer]
-        B[12,000 Buses] -->|JSON| K
-        T[3,800 Traffic Sensors] -->|JSON| K
-        A[600 AQI Monitors] -->|JSON| K
-        M[1.1M Smart Meters] -->|JSON| K
+    %% Data Sources Layer
+    subgraph Sources [1. Data Sources Layer]
+        B[12,000 GPS Buses]
+        T[3,800 Traffic Sensors]
+        A[600 AQI Monitors]
+        M[1.1M Smart Meters]
     end
 
-    %% Ingestion
-    subgraph Ingestion [Ingestion Layer]
-        K((Apache Kafka 3-Broker Cluster))
+    %% Ingestion Layer
+    subgraph Ingestion [2. Ingestion Layer]
+        K[Apache Kafka 3-Broker Cluster]
     end
 
-    %% Processing (Lambda Architecture)
-    subgraph Processing [Processing Layer - Lambda]
-        K -->|bus, traffic, aqi| F[Apache Flink <br> Real-Time Speed Layer]
-        K -->|meters, aqi| S[Apache Spark <br> 15-Min Batch Layer]
+    %% Data flow into Ingestion
+    B -->|JSON| K
+    T -->|JSON| K
+    A -->|JSON| K
+    M -->|JSON| K
+
+    %% Processing Layer
+    subgraph Processing [3. Processing Layer - Lambda]
+        F[Apache Flink <br> Real-Time Speed Layer]
+        S[Apache Spark <br> 15-Min Batch Layer]
     end
 
-    %% Storage
-    subgraph Storage [Storage Layer]
-        F --> P1[(PostGIS <br> Geospatial Bus)]
-        F --> T1[(TimescaleDB <br> Live Traffic)]
-        S --> M1[(MinIO Object Store <br> Parquet Historical)]
-        S --> P2[(PostgreSQL <br> Councillor Aggregates)]
+    K -->|bus, traffic, aqi| F
+    K -->|meters, aqi| S
+
+    %% Storage Layer
+    subgraph Storage [4. Storage Layer]
+        P1[(PostGIS <br> Geospatial Bus)]
+        T1[(TimescaleDB <br> Live Traffic)]
+        P2[(PostgreSQL <br> Councillor Aggregates)]
+        M1[(MinIO Object Store <br> Parquet Historical)]
     end
 
-    %% Serving
-    subgraph Serving [Serving Layer]
-        P1 --> API[Real-Time ETA API]
-        T1 --> SIG[Adaptive Signal Control Interface]
-        P2 --> DASH[Apache Superset <br> Ward Officer Dashboard]
-        M1 --> DASH
+    F --> P1
+    F --> T1
+    S --> P2
+    S --> M1
+
+    %% Serving Layer
+    subgraph Serving [5. Serving Layer]
+        API[Real-Time ETA API]
+        SIG[Adaptive Signal Control]
+        DASH[Apache Superset <br> Ward Officer Dashboard]
     end
+
+    P1 --> API
+    T1 --> SIG
+    P2 --> DASH
+    M1 --> DASH
