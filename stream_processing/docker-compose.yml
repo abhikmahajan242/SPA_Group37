@@ -63,5 +63,35 @@ services:
     volumes:
       - ./target:/opt/flink/usrlib
 
+  # --- Spark Master ---
+  spark-master:
+    image: spark:3.5.3
+    container_name: spark-master
+    ports:
+      - "8083:8080"        # Spark Web UI
+      - "7077:7077"        # Spark master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      - SPARK_MASTER_HOST=spark-master
+    volumes:
+      - ./spark_jobs:/opt/spark/jobs
+      - ./data:/opt/spark/data
+
+  # --- Spark Worker ---
+  spark-worker:
+    image: spark:3.5.3
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    ports:
+      - "8084:8080"        # Spark worker Web UI
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_MEMORY=2g
+    volumes:
+      - ./spark_jobs:/opt/spark/jobs
+      - ./data:/opt/spark/data
+
 volumes:
   kafka-data:
